@@ -1,0 +1,67 @@
+/* Add this CSS to your Shop.css file or your component's CSS */
+
+/* Pagination container */
+.pagination {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin-top: 20px;
+}
+
+/* Pagination items */
+.page-item {
+  margin: 0 5px;
+}
+
+/* Pagination links */
+.page-link {
+  display: block;
+  padding: 10px 15px;
+  background-color: #f0f0f0;
+  color: #333;
+  text-align: center;
+  text-decoration: none;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Hover state for links */
+.page-link:hover {
+  background-color: #4b5563;
+  color: #fff;
+}
+
+/* Active page item */
+.page-item.active .page-link {
+  background-color: #4b5563;
+  color: #fff;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .page-item {
+    margin: 0 3px;
+  }
+
+  .page-link {
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .pagination {
+    gap: auto;
+  }
+  .page-item {
+    margin: 0 2px;
+  }
+
+  .page-link {
+    padding: 6px 10px;
+  }
+}
