@@ -8,7 +8,7 @@ const Profile = () => {
   const axiosPublic = useAxiosPublic();
   const [userInfo, setUserInfo] = useState([]);
   useEffect(() => {
-    axiosPublic.get(`/user?email=${user.email}`).then((res) => {
+    axiosPublic.get(`/user/${user.email}`).then((res) => {
       setUserInfo(res.data);
     });
   }, [axiosPublic, user.email]);
@@ -28,7 +28,7 @@ const Profile = () => {
         </div>
         <div className="text-center font-normal text-lg">{userInfo?.role}</div>
         <div className="px-6 text-center mt-2 font-light text-sm">
-          <p>{userInfo?.photo}</p>
+          <p>{userInfo?.photo}cd</p>
         </div>
         <hr className="mt-8" />
         <div className="flex p-4">

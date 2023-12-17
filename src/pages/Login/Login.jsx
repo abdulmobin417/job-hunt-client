@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import { useContext, useEffect, useState } from "react";
+import useAxiosPublic from "../../hooks/useAxiosPublic";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,7 +27,7 @@ const Login = () => {
   const [disabled, setDisabled] = useState(true);
   const [validationCode, setValidationCode] = useState("");
   const [validationError, setValidationError] = useState("");
-  // console.log(from);
+  const axiosPublic = useAxiosPublic();
 
   const handleValidateCaptcha = () => {
     // const captchaCode = e.target.value;
@@ -44,19 +45,52 @@ const Login = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
     const email = form.email.value;
     const password = form.password.value;
-    // console.log(email, password);
+
+    const result = await axiosPublic.get(`/user/${email}`);
+    if (result.data?.isDelete) {
+      toast.error("Account has been suspended", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      const userInfo = {
+        email,
+        password,
+        date: new Date(),
+        try: "login failed",
+      };
+      // logger info
+      axiosPublic.post("/logger", userInfo).then((res) => {
+        console.log(res.data.insertedId);
+      });
+      return;
+    }
 
     signIn(email, password)
       .then(() => {
         navigate(from, { replace: true });
+        const userInfo = {
+          email,
+          password,
+          date: new Date(),
+          try: "login successfull",
+        };
+        // logger info
+        axiosPublic.post("/logger", userInfo).then((res) => {
+          console.log(res.data.insertedId);
+        });
       })
-      .catch(() => {
-        // console.log(err);
+      .catch((err) => {
         toast.error("Invalid Email or Password", {
           position: "top-right",
           autoClose: 3000,
@@ -66,6 +100,16 @@ const Login = () => {
           draggable: true,
           progress: undefined,
           theme: "light",
+        });
+        const userInfo = {
+          email,
+          password,
+          date: new Date(),
+          try: err,
+        };
+        // logger info
+        axiosPublic.post("/logger", userInfo).then((res) => {
+          console.log(res.data.insertedId);
         });
       });
   };
@@ -210,7 +254,7 @@ const Login = () => {
                 type="submit"
                 disabled={disabled}
                 className={`flex w-full justify-center rounded-md bg-[#FF3811] px-3 py-1.5 text font-semibold leading-6 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ${
-                  disabled ? "bg-gray-300" : "hover:bg-[#FF1811]"
+                  disabled ? "bg-gray-300" : "hover:bg-[#FF1811] cursor-pointer"
                 }`}
                 value="Sign in"
               />

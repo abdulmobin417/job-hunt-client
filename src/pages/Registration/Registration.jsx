@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { updateProfile } from "firebase/auth";
 import useTitle from "../../hooks/useTitle";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { BiInfoCircle } from "react-icons/bi";
@@ -12,69 +11,71 @@ import useAxiosPublic from "../../hooks/useAxiosPublic";
 
 const Registration = () => {
   useTitle("Sing Up");
-  const { createUser, handleUserName } = useContext(AuthContext);
+  const { createUser, updateUserProfile } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(true);
+  const [loadingUser, setLoadingUser] = useState(false);
   const axiosPublic = useAxiosPublic();
   const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
 
   const onSubmit = (data) => {
+    setLoadingUser(true);
+    const userInfo = {
+      name: data.name,
+      email: data.email,
+      photo: data.photoUrl,
+      password: data.password,
+      role: data.category,
+      date: new Date(),
+    };
+    // logger info
+    axiosPublic.post("/logger", userInfo).then(res => {
+      console.log(res.data.insertedId);
+    })
+
     // create user
-    createUser(data.email, data.password)
-      .then((res) => {
-        toast.success("Registration Successful!", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
-        // update profile
-        updateProfile(res.user, {
-          displayName: data.name,
-          photoURL: data.photoUrl,
-        })
+    axiosPublic.post("/registration", userInfo).then((res) => {
+      if (res.data.insertedId) {
+        createUser(data.email, data.password)
           .then(() => {
-            handleUserName(data.name, data.photoUrl);
-            // database save
-            const userInfo = {
-              name: data.name,
-              email: data.email,
-              photo: data.photoUrl,
-              password: data.password,
-              role: "seeker",
-            };
-            axiosPublic.post("/registration", userInfo).then(() => {
-              // console.log(data);
-            });
+            updateUserProfile(data.name, data.photoUrl)
+              .then(() => {
+                reset();
+                setLoadingUser(false);
+                toast.success("Registration Success");
+                navigate("/");
+              })
+              .catch((error) => {
+                toast.error(error.message);
+              });
           })
-          .catch();
-      })
-      .catch((error) => {
-        console.log(error.message);
-        if (error.message.match("email-already-in-use")) {
-          toast.error("Email already in use!", {
-            position: "top-right",
-            autoClose: 2000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "light",
+          .catch((error) => {
+            toast.error(error.message);
           });
-        }
-      });
-    navigate("/");
+      }
+    });
   };
+
+  if (loadingUser) {
+    return (
+      <div className="w-full min-h-screen flex justify-center items-center">
+        <p>Loading....</p>
+        {/* <RotatingLines
+          strokeColor="green"
+          strokeWidth="5"
+          animationDuration="0.75"
+          width="36"
+          visible={true}
+        /> */}
+      </div>
+    );
+  }
 
   return (
     <div className="mb-20 flex items-center">
@@ -95,6 +96,24 @@ const Registration = () => {
         </div>
         <div className="mt-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <label
+                htmlFor="type"
+                className="block font-medium leading-6 text-gray-900"
+              >
+                Account Type
+              </label>
+              <div className="flex justify-between items-center gap-2 mt-2">
+                <select
+                  {...register("category", { required: true })}
+                  className="input input-bordered focus:outline-none flex-1"
+                  defaultValue="seeker"
+                >
+                  <option value="seeker">Seeker</option>
+                  <option value="recruiter">Recruiter</option>
+                </select>
+              </div>
+            </div>
             <div className="">
               <label
                 htmlFor="email"

@@ -6,7 +6,7 @@ const useJob = () => {
 
   const fetchJobs = async () => {
     const response = await axiosSecure.get(`/jobs`);
-    return response.data;
+    return response.data?.filter((job) => job?.isDelete !== true);
   };
 
   const {

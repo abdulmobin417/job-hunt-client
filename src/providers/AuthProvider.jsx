@@ -9,25 +9,37 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
+  updateProfile,
 } from "firebase/auth";
 import axios from "axios";
+import useAxiosPublic from "../hooks/useAxiosPublic";
 
 export const AuthContext = createContext();
 const auth = getAuth(app);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const axiosPublic = useAxiosPublic();
   const [loading, setLoading] = useState(true);
+  const [adminLoading, setAdminLoading] = useState(true);
   const [logUserInfo, setLogUserInfo] = useState({ name: null, photo: null });
   const googleProvider = new GoogleAuthProvider();
-
-  const handleUserName = (name, photo) => {
-    setLogUserInfo({ name, photo });
-  };
+  const [quizPackage, setQuizPackage] = useState({
+    price: null,
+    category: null,
+  });
 
   const createUser = (email, password) => {
     setLoading(true);
     return createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  const updateUserProfile = (name, photo) => {
+    setLogUserInfo({ name, photo });
+    return updateProfile(auth.currentUser, {
+      displayName: name,
+      photoURL: photo,
+    });
   };
 
   const signIn = (email, password) => {
@@ -50,36 +62,38 @@ const AuthProvider = ({ children }) => {
       const userEmail = currentUser?.email || user?.email;
       const loggedUser = { email: userEmail };
       setUser(currentUser);
+      setAdminLoading(true);
 
       if (currentUser) {
-        axios
-          .post("https://job-seeker-server-lemon.vercel.app/jwt", loggedUser, {
+        axiosPublic
+          .post("/jwt", loggedUser, {
             withCredentials: true,
+            credentials: "include",
           })
-          .then((res) => {
-            console.log("token response: ", res.data);
+          .then(() => {
+            // console.log("token response: ", res.data);
+            setAdminLoading(false);
           });
       } else {
         axios
           .post(
-            "https://job-seeker-server-lemon.vercel.app/logout",
+            "https://job-seeker-server-omega.vercel.app/logout",
             loggedUser,
             {
               withCredentials: true,
             }
           )
-          .then((res) => {
-            console.log(res.data);
+          .then(() => {
+            // console.log(res.data);
           });
       }
-
-      setLoading(false);
       console.log("current user in auth Provider", currentUser);
+      setLoading(false);
     });
     return () => {
       return unsubscribe();
     };
-  }, [user?.email]);
+  }, [user?.email, axiosPublic]);
 
   const authInfo = {
     user,
@@ -88,8 +102,11 @@ const AuthProvider = ({ children }) => {
     signIn,
     googleSignIn,
     logOut,
-    handleUserName,
     logUserInfo,
+    updateUserProfile,
+    setQuizPackage,
+    quizPackage,
+    adminLoading,
   };
 
   return (

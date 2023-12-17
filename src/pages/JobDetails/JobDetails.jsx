@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { useQuery } from "@tanstack/react-query";
 import { useContext, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../../providers/AuthProvider";
 import Modal from "react-modal";
 import { toast } from "react-toastify";
@@ -9,6 +9,8 @@ import emailjs from "@emailjs/browser";
 import useSeeker from "../../hooks/useSeeker";
 import useTitle from "../../hooks/useTitle";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useRole from "../../hooks/useRole";
+import Swal from "sweetalert2";
 
 const customStyles = {
   content: {
@@ -25,6 +27,8 @@ const JobDetails = () => {
   useTitle("Job Details");
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const { isRole } = useRole();
+  const nevigate = useNavigate();
 
   const axiosSecure = useAxiosSecure();
 
@@ -99,6 +103,27 @@ const JobDetails = () => {
     });
   };
 
+  const handleDelete = (aJob) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: `You want to delete this job!`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axiosSecure.patch(`/admin/deleteJob/${aJob}`).then((res) => {
+          if (res.data.modifiedCount > 0) {
+            toast.success(`The job is deleted!`);
+            nevigate("/alljobs");
+          }
+        });
+      }
+    });
+  };
+
   return (
     <div className="mb-20">
       <div className="">
@@ -130,18 +155,28 @@ const JobDetails = () => {
             </p>
           </div>
           <div className="mt-10">
-            <button
-              className="btn"
-              onClick={openModal}
-              disabled={
-                user?.email === job?.userEmail ||
-                new Date() > new Date(job?.applicationDeadline) ||
-                dataHas ||
-                btnDisable
-              }
-            >
-              Apply Now
-            </button>
+            {isRole === "admin" ? (
+              <button
+                className="btn bg-red-400"
+                onClick={() => handleDelete(job?._id)}
+              >
+                Delete Job
+              </button>
+            ) : (
+              <button
+                className="btn"
+                onClick={openModal}
+                disabled={
+                  user?.email === job?.userEmail ||
+                  new Date() > new Date(job?.applicationDeadline) ||
+                  dataHas ||
+                  btnDisable ||
+                  isRole === "recruiter"
+                }
+              >
+                Apply Now
+              </button>
+            )}
             <Modal
               isOpen={modalIsOpen}
               // onAfterOpen={afterOpenModal}

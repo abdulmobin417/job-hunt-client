@@ -16,6 +16,9 @@ import ContactUs from "../pages/ContactUs/ContactUs";
 import AboutUs from "../pages/AboutUs/AboutUs";
 import TermsAndConditions from "../pages/Shared/TermsAndConditions/TermsAndConditions";
 import Profile from "../pages/Profile/Profile";
+import Payment from "../pages/Payment/Payment";
+import UserDashboard from "../pages/Dashboard/UserDashboard";
+import AdminDashboard from "../pages/Dashboard/AdminDashboard";
 
 const router = createBrowserRouter([
   {
@@ -71,7 +74,7 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
         loader: ({ params }) =>
-          fetch(`https://job-seeker-server-lemon.vercel.app/jobs/${params.id}`),
+          fetch(`https://job-seeker-server-omega.vercel.app/jobs/${params.id}`),
       },
       {
         path: "/profile",
@@ -104,6 +107,26 @@ const router = createBrowserRouter([
       {
         path: "/terms",
         element: <TermsAndConditions />,
+      },
+      {
+        path: "/payment",
+        element: <Payment />,
+      },
+      {
+        path: "/dashboard/paymentHistory",
+        element: (
+          <PrivateRoute>
+            <UserDashboard />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/dashboard/adminHome",
+        element: (
+          <PrivateRoute>
+            <AdminDashboard />
+          </PrivateRoute>
+        ),
       },
     ],
   },

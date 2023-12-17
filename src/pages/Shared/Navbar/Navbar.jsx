@@ -2,11 +2,12 @@ import { NavLink } from "react-router-dom";
 import logo from "../../../assets/logo1.png";
 import { useContext } from "react";
 import { AuthContext } from "../../../providers/AuthProvider";
-// import pic from "../../../assets/user.png";
 import { Tooltip as ReactTooltip } from "react-tooltip";
+import useRole from "../../../hooks/useRole";
 
 const Navbar = () => {
   const { user, logOut, logUserInfo } = useContext(AuthContext);
+  const { isRole } = useRole();
   const handleLogout = () => {
     logOut()
       .then(() => {})
@@ -39,42 +40,48 @@ const Navbar = () => {
       </li>
       {user && (
         <>
-          <li>
-            <NavLink
-              to="appliedjobs"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-[#f03737]"
-                  : "text-[#474747] hover:text-[#f03737]"
-              }
-            >
-              Applied Jobs
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="addajob"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-[#f03737]"
-                  : "text-[#474747] hover:text-[#f03737]"
-              }
-            >
-              Add A Job
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="myjobs"
-              className={({ isActive }) =>
-                isActive
-                  ? "text-[#f03737]"
-                  : "text-[#474747] hover:text-[#f03737]"
-              }
-            >
-              My Jobs
-            </NavLink>
-          </li>
+          {isRole === "seeker" && (
+            <li>
+              <NavLink
+                to="appliedjobs"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-[#f03737]"
+                    : "text-[#474747] hover:text-[#f03737]"
+                }
+              >
+                Applied Jobs
+              </NavLink>
+            </li>
+          )}
+          {isRole === "recruiter" && (
+            <li>
+              <NavLink
+                to="addajob"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-[#f03737]"
+                    : "text-[#474747] hover:text-[#f03737]"
+                }
+              >
+                Add A Job
+              </NavLink>
+            </li>
+          )}
+          {isRole === "recruiter" && (
+            <li>
+              <NavLink
+                to="myjobs"
+                className={({ isActive }) =>
+                  isActive
+                    ? "text-[#f03737]"
+                    : "text-[#474747] hover:text-[#f03737]"
+                }
+              >
+                My Jobs
+              </NavLink>
+            </li>
+          )}
         </>
       )}
       <li>
@@ -138,7 +145,7 @@ const Navbar = () => {
                   {user?.photoURL ? (
                     <img
                       className="w-12 h-12 rounded-full object-cover"
-                      src={user.photoURL}
+                      src={user?.photoURL}
                       data-tooltip-id="my-tooltip-2"
                       alt=""
                     />
@@ -153,10 +160,45 @@ const Navbar = () => {
                 </summary>
                 <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-36 absolute right-0">
                   <li className="flex items-center">
-                    <NavLink to="/profile">
+                    <NavLink
+                      to="/profile"
+                      className={({ isActive }) =>
+                        isActive
+                          ? "text-[#f03737] text-base font-semibold"
+                          : "text-[#474747] text-base font-semibold hover:text-[#f03737]"
+                      }
+                    >
                       Profile
                     </NavLink>
                   </li>
+                  {isRole === "admin" && (
+                    <li className="flex items-center">
+                      <NavLink
+                        to="/dashboard/adminHome"
+                        className={({ isActive }) =>
+                          isActive
+                            ? "text-[#f03737] text-base font-semibold"
+                            : "text-[#474747] text-base font-semibold hover:text-[#f03737]"
+                        }
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                  )}
+                  {isRole === "seeker" && (
+                    <li className="flex items-center">
+                      <NavLink
+                        to="/dashboard/paymentHistory"
+                        className={({ isActive }) =>
+                          isActive
+                            ? "text-[#f03737] text-base font-semibold"
+                            : "text-[#474747] text-base font-semibold hover:text-[#f03737]"
+                        }
+                      >
+                        Dashboard
+                      </NavLink>
+                    </li>
+                  )}
                   <li className="flex items-center">
                     <NavLink to="/login">
                       <button

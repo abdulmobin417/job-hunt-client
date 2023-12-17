@@ -4,11 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 
 const axiosSecure = axios.create({
-  baseURL: "https://job-seeker-server-lemon.vercel.app",
+  baseURL: "https://job-seeker-server-omega.vercel.app",
   headers: {
     "Content-type": "application/json",
   },
   withCredentials: true,
+  credentials: "include",
 });
 
 const useAxiosSecure = () => {
