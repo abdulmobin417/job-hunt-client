@@ -24,8 +24,34 @@ const Registration = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     setLoadingUser(true);
+    const result = await axiosPublic.get(`/user/${data.email}`);
+    if (result.data?.isDelete) {
+      toast.error("Account has been registered", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      const userInfo = {
+        email: data.email,
+        password: data.password,
+        date: new Date(),
+        try: "login failed",
+      };
+      // logger info
+      axiosPublic.post("/logger", userInfo).then((res) => {
+        console.log(res.data.insertedId);
+      });
+      setLoadingUser(false);
+      return;
+    }
+
     const userInfo = {
       name: data.name,
       email: data.email,
@@ -35,9 +61,9 @@ const Registration = () => {
       date: new Date(),
     };
     // logger info
-    axiosPublic.post("/logger", userInfo).then(res => {
+    axiosPublic.post("/logger", userInfo).then((res) => {
       console.log(res.data.insertedId);
-    })
+    });
 
     // create user
     axiosPublic.post("/registration", userInfo).then((res) => {
